@@ -1,6 +1,10 @@
 import os
 import requests
+import json
+import logging
 from typing import Dict, Any, Optional
+
+logger = logging.getLogger(__name__)
 
 class GoogleSheetsClient:
     """
@@ -10,7 +14,7 @@ class GoogleSheetsClient:
     def __init__(self, webhook_url: Optional[str] = None):
         self.webhook_url = webhook_url or os.getenv("GOOGLE_SHEETS_WEBHOOK_URL")
         if not self.webhook_url:
-            print("[ADVERTENCIA] GOOGLE_SHEETS_WEBHOOK_URL no configurada.")
+            logger.warning("[ADVERTENCIA] GOOGLE_SHEETS_WEBHOOK_URL no configurada.")
 
     def _post(self, action: str, data: Dict[str, Any]) -> Dict[str, Any]:
         if not self.webhook_url:
@@ -21,9 +25,19 @@ class GoogleSheetsClient:
             "data": data
         }
         try:
-            response = requests.post(self.webhook_url, json=payload, timeout=25)
+            response = requests.post(self.webhook_url, json=payload, timeout=30)
             response.raise_for_status()
-            return response.json()
+            
+            # Intentar decodificar JSON
+            try:
+                return response.json()
+            except Exception:
+                # Si la respuesta no es JSON válido (ej: texto plano "OK" o HTML)
+                text = response.text.strip()
+                if text == "OK":
+                    return {"status": "success", "message": "Registrado (respuesta OK)", "data": data}
+                return {"status": "error", "message": f"Respuesta no reconocida de Google Sheets: {text[:100]}"}
+
         except Exception as e:
             return {"status": "error", "message": str(e)}
 

@@ -374,8 +374,18 @@ function agregarSiniestro(ss, data) {
   }
 
   const fecha = data.fecha || formatearFechaDDMMAAAA();
-  const aseguradora = (data.aseguradora || "S/D").toUpperCase();
-  const reporte = (data.reporte || "S/N").toString();
+  const reporte = (data.reporte || "S/N").toString().trim();
+  let aseguradora = (data.aseguradora || "").toString().trim().toUpperCase();
+
+  // Validación estricta con la regla de validación de datos de la Columna B
+  const aseguradorasValidas = ["INBURSA", "MAPFRE", "SPT", "CRABI", "PRIMERO", "MAPS"];
+  if (aseguradorasValidas.indexOf(aseguradora) === -1) {
+    if (reporte.startsWith("705") || reporte.startsWith("305")) aseguradora = "INBURSA";
+    else if (reporte.startsWith("67")) aseguradora = "SPT";
+    else if (reporte.startsWith("2026")) aseguradora = "CRABI";
+    else aseguradora = "SPT";
+  }
+
   const ubicacion = (data.ubicacion || "LOCAL").toUpperCase();
   const vehiculo = (data.vehiculo || "S/D").toUpperCase();
 

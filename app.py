@@ -26,7 +26,7 @@ root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
 root_logger.addHandler(buffer_handler)
 
-# También agregar el handler a los loggers principales
+# Loggers principales
 for logger_name in ["render_service", "bot_telegram", "gemini_parser", "sheets_client", "telegram", "httpx"]:
     l = logging.getLogger(logger_name)
     l.setLevel(logging.INFO)
@@ -43,9 +43,20 @@ bot_status = {
     "last_error": None
 }
 
-@app.route("/")
-@app.route("/health")
-def health():
+@app.route("/", methods=["GET", "HEAD"])
+@app.route("/ping", methods=["GET", "HEAD"])
+@app.route("/health", methods=["GET", "HEAD"])
+def ping():
+    """
+    Endpoint ultra-ligero para cron-job.org y health checks.
+    Devuelve estrictamente 2 bytes 'OK' en texto plano para evitar
+    el error de 'Response data too big' de cron-job.org.
+    """
+    return Response("OK", status=200, mimetype="text/plain", headers={"Content-Length": "2"})
+
+@app.route("/status")
+def status_endpoint():
+    """Diagnóstico detallado en JSON con verificación de variables y estado del bot"""
     tg = os.getenv("TELEGRAM_BOT_TOKEN", "").strip().strip("\"'")
     gem = os.getenv("GEMINI_API_KEY", "").strip().strip("\"'")
     sh = os.getenv("GOOGLE_SHEETS_WEBHOOK_URL", "").strip().strip("\"'")

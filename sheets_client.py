@@ -12,7 +12,8 @@ class GoogleSheetsClient:
     Fácil de configurar sin necesidad de credenciales complejas de Google Cloud.
     """
     def __init__(self, webhook_url: Optional[str] = None):
-        self.webhook_url = webhook_url or os.getenv("GOOGLE_SHEETS_WEBHOOK_URL")
+        raw_url = webhook_url or os.getenv("GOOGLE_SHEETS_WEBHOOK_URL", "")
+        self.webhook_url = raw_url.strip().strip("\"'") if raw_url else None
         if not self.webhook_url:
             logger.warning("[ADVERTENCIA] GOOGLE_SHEETS_WEBHOOK_URL no configurada.")
 

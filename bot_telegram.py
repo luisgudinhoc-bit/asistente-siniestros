@@ -27,7 +27,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Instancias principales
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+raw_tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_BOT_TOKEN = raw_tg_token.strip().strip("\"'")
 ai_parser = SiniestrosAIParser()
 sheets_client = GoogleSheetsClient()
 

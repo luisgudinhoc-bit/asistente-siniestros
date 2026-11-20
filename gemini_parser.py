@@ -29,7 +29,8 @@ class SiniestrosAIParser:
     MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-3.7-flash"]
 
     def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
+        raw_key = api_key or os.getenv("GEMINI_API_KEY", "")
+        self.api_key = raw_key.strip().strip("\"'") if raw_key else None
         self.client = None
         
         if self.api_key:
